@@ -4,6 +4,7 @@ from telebot.async_telebot import *
 from telebot.callback_data import CallbackData, CallbackDataFilter
 from db.dbConfig import dbConfig, build_db
 from dotenv import load_dotenv
+from scraper.gpScraper import scrap_app
 
 load_dotenv()
 API_TOKEN = os.getenv('API_TOKEN')
@@ -21,7 +22,7 @@ bot = TeleBot(API_TOKEN)
 build_db()
 
 
-# bot.set_my_commands(cmds)
+bot.set_my_commands(cmds)
 
 
 class pkgsCallbackFilter(AdvancedCustomFilter):
@@ -135,8 +136,10 @@ def status_pkgs(message):
         bot.send_message(message.chat.id, "You have no apps yet, please use the command /addapp the add a new app.")
     else:
         for pkg in pkgs:
-            text = pkg
-            bot.send_message(message.chat.id, text)
+            if scrap_app(pkg) is not False:
+                bot.send_message(message.chat.id, f'🟢 {pkg}')
+            else:
+                bot.send_message(message.chat.id, f'🔴 {pkg}')
 
 
 bot.add_custom_filter(pkgsCallbackFilter())
