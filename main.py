@@ -73,6 +73,7 @@ def options_keyboard(pkg):
 
 @bot.message_handler(commands=['myapps'])
 def list_pkgs(message):
+    print(message.chat.id)
     pkgs = dbConfig().get_pkgs(int(message.chat.id))
     if len(pkgs) <= 0:
         bot.send_message(message.chat.id, "You have no apps yet, please use the command /addapp the add a new app.")
