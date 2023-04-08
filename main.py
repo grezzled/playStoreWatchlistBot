@@ -1,9 +1,13 @@
+import os
 from telebot import *
 from telebot.async_telebot import *
 from telebot.callback_data import CallbackData, CallbackDataFilter
 from db.dbConfig import dbConfig, build_db
+from dotenv import load_dotenv
 
-API_TOKEN = '6060583785:AAEpBspgwL7eGSK5OZR-9fLHdYwGvkJ2JwQ'
+load_dotenv()
+API_TOKEN = os.getenv('API_TOKEN')
+
 
 cmds = [
     telebot.types.BotCommand("myapps", "List your applications"),
