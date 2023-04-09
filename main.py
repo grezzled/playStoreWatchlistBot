@@ -7,6 +7,9 @@ from dotenv import load_dotenv
 from scraper.gpScraper import scrap_app
 
 load_dotenv()
+
+sys.setrecursionlimit(1000)
+
 API_TOKEN = os.getenv('API_TOKEN')
 
 
@@ -136,7 +139,7 @@ def status_pkgs(message):
         bot.send_message(message.chat.id, "You have no apps yet, please use the command /addapp the add a new app.")
     else:
         for pkg in pkgs:
-            if scrap_app(pkg) is not False:
+            if scrap_app(pkg, message.chat.id) is not False:
                 bot.send_message(message.chat.id, f'🟢 {pkg}')
             else:
                 bot.send_message(message.chat.id, f'🔴 {pkg}')
