@@ -3,6 +3,7 @@ import os.path
 import sqlite3 as sql
 from dotenv import load_dotenv
 from db.appModal import appModal
+from datetime import datetime, date
 
 load_dotenv()
 db_file = os.getenv('DB_FILE')
@@ -22,11 +23,12 @@ def build_db():
         print('building_db')
         with con:
             con.execute("""
-            create table users (id integer not null primary key);
+            create table users (id integer not null primary key, created_at DATETIME DEFAULT CURRENT_TIMESTAMP);
         """)
         with con:
             con.execute("""
-                create table pkgs (pkg string not null primary key, user_id integer not null, foreign key(user_id) references users(id));
+                create table pkgs (pkg string not null primary key, user_id integer not null, created_at DATETIME 
+                DEFAULT CURRENT_TIMESTAMP, foreign key(user_id) references users(id));
             """)
         with con:
             con.execute("""create table apps (pkg string not null primary key, user_id integer not null, 
@@ -37,7 +39,17 @@ def build_db():
             string, developerAddress string, privacyPolicy string, genre string, genreId string, icon string, 
             headerImage string, video string, videoImage string, contentRating string, contentRatingDescription 
             string, adSupported string, containsAds string, released string, updated string, version  string, 
-            url string, foreign key(user_id) references users(id));""")
+            url string, created_at DATETIME DEFAULT CURRENT_TIMESTAMP, foreign key(user_id) references users(id));""")
+        with con:
+            con.execute("""create table apps_logs (pkg string not null, user_id integer not null, 
+            title string, description string, descriptionHTML string, summary string, installs string, minInstalls 
+            string, realInstalls string, score string, ratings string, reviews string, price string, free string, 
+            currency string, sale string, saleTime string, originalPrice string, saleText string, offersIAP string, 
+            inAppProductPrice string, developer string, developerId string, developerEmail string, developerWebsite 
+            string, developerAddress string, privacyPolicy string, genre string, genreId string, icon string, 
+            headerImage string, video string, videoImage string, contentRating string, contentRatingDescription 
+            string, adSupported string, containsAds string, released string, updated string, version  string, 
+            url string, created_at DATETIME DEFAULT CURRENT_TIMESTAMP);""")
 
 
 class dbConfig:
@@ -70,6 +82,40 @@ class dbConfig:
                 self.con.executemany(sql_string, data)
             except Exception as x:
                 print(x)
+
+    def add_app_log(self, appModal: appModal):
+        sql_string = """insert into apps_logs(pkg, user_id, title, description, descriptionHTML, summary, installs, 
+        minInstalls, realInstalls,score , ratings , reviews , price , free , currency , sale , saleTime , 
+        originalPrice , saleText , offersIAP , inAppProductPrice , developer , developerId , developerEmail , 
+        developerWebsite , developerAddress , privacyPolicy , genre , genreId , icon , headerImage , video , 
+        videoImage , contentRating , contentRatingDescription , adSupported , containsAds , released , updated , 
+        version  , url) values(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)"""
+        data = [(appModal.pkg, appModal.user_id, appModal.title, appModal.description, appModal.descriptionHTML,
+                 appModal.summary, appModal.installs, appModal.minInstalls, appModal.realInstalls, appModal.score,
+                 appModal.ratings,
+                 appModal.reviews, appModal.price, appModal.free, appModal.currency, appModal.sale, appModal.saleTime,
+                 appModal.originalPrice, appModal.saleText, appModal.offersIAP, appModal.inAppProductPrice,
+                 appModal.developer, appModal.developerId, appModal.developerEmail, appModal.developerWebsite,
+                 appModal.developerAddress, appModal.privacyPolicy, appModal.genre, appModal.genreId, appModal.icon,
+                 appModal.headerImage, appModal.video, appModal.videoImage, appModal.contentRating,
+                 appModal.contentRatingDescription, appModal.adSupported, appModal.containsAds, appModal.released,
+                 appModal.updated, appModal.version, appModal.url
+                 )]
+        with self.con:
+            try:
+                self.con.executemany(sql_string, data)
+            except Exception as x:
+                print(x)
+
+    def get_app(self, pkg: str) -> []:
+        sql_string = 'SELECT pkg FROM apps WHERE pkg = (?)'
+        data = [pkg]
+        rows = []
+        with self.con:
+            cursor = self.con.execute(sql_string, data)
+            for r in cursor:
+                rows.append(r[0])
+        return rows
 
     def add_user(self, user_id: int):
         # TODO validate ID, make sure it is an integer
@@ -113,3 +159,5 @@ class dbConfig:
             for r in cursor:
                 rows.append(r[0])
         return rows
+
+

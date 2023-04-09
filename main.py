@@ -5,26 +5,20 @@ from telebot.callback_data import CallbackData, CallbackDataFilter
 from db.dbConfig import dbConfig, build_db
 from dotenv import load_dotenv
 from scraper.gpScraper import scrap_app
+import time, threading, schedule, random
 
 load_dotenv()
 
-sys.setrecursionlimit(1000)
+build_db()
 
 API_TOKEN = os.getenv('API_TOKEN')
-
-
 cmds = [
     telebot.types.BotCommand("myapps", "List your applications"),
     telebot.types.BotCommand("addapp", "Add an application"),
     telebot.types.BotCommand("status", "Return status of all apps"),
     telebot.types.BotCommand("start", "Welcoming message")
 ]
-
 bot = TeleBot(API_TOKEN)
-
-build_db()
-
-
 bot.set_my_commands(cmds)
 
 
@@ -134,17 +128,38 @@ def delpkg_callback(call: types.CallbackQuery):
 
 @bot.message_handler(commands=['status'])
 def status_pkgs(message):
-    pkgs = dbConfig().get_pkgs(int(message.chat.id))
+    status_notifier(chat_id=message.chat.id)
+
+
+def status_notifier(chat_id) -> None:
+    pkgs = dbConfig().get_pkgs(int(chat_id))
     if len(pkgs) <= 0:
-        bot.send_message(message.chat.id, "You have no apps yet, please use the command /addapp the add a new app.")
+        bot.send_message(chat_id, "You have no apps yet, please use the command /addapp the add a new app.")
     else:
         for pkg in pkgs:
-            if scrap_app(pkg, message.chat.id) is not False:
-                bot.send_message(message.chat.id, f'🟢 {pkg}')
+            if scrap_app(pkg, chat_id) is not False:
+                bot.send_message(chat_id, f'🟢 {pkg}')
             else:
-                bot.send_message(message.chat.id, f'🔴 {pkg}')
+                bot.send_message(chat_id, f'🔴 {pkg}')
+
+
+@bot.message_handler(commands=['start'])
+def set_timer(message):
+    bot.send_message(chat_id=message.chat.id,
+                     text='Hi! welcome to our bot, check /help to get all the information about how to use our bot')
+    schedule.every(random.randrange(3600, 7200)).seconds.do(status_notifier, message.chat.id).tag(message.chat.id)
+
+
+@bot.message_handler(commands=['unset'])
+def unset_timer(message):
+    schedule.clear(message.chat.id)
 
 
 bot.add_custom_filter(pkgsCallbackFilter())
 bot.add_custom_filter(delPkgCallbackFilter())
-bot.infinity_polling()
+# bot.infinity_polling()
+if __name__ == '__main__':
+    threading.Thread(target=bot.infinity_polling, name='bot_infinity_polling', daemon=True).start()
+    while True:
+        schedule.run_pending()
+        time.sleep(1)

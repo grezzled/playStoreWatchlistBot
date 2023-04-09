@@ -10,8 +10,9 @@ def scrap_app(pkg: str, user_id):
         result = app(pkg)
         if result:
             a = get_app_modal(result, pkg, user_id)
-            print(a)
-            dbConfig().add_app(a)
+            if not dbConfig().get_app(pkg):
+                dbConfig().add_app(a)
+            dbConfig().add_app_log(a)
     except Exception as e:
         print(str(e))
         return False
