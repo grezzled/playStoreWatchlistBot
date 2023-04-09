@@ -1,93 +1,52 @@
 import os
+import schedule
+from dotenv import load_dotenv
 from telebot import *
 from telebot.async_telebot import *
-from telebot.callback_data import CallbackData, CallbackDataFilter
+from botFactories import pkgs_factory, delpkg_factory
+from botFilters import pkgsCallbackFilter, delPkgCallbackFilter
+from botKeyboards import pkgs_keyboard, options_keyboard
+from botSteps import botSteps
 from db.dbConfig import dbConfig, build_db
-from dotenv import load_dotenv
 from scraper.gpScraper import scrap_app
-import time, threading, schedule, random
 
+""" Load environment variables """
 load_dotenv()
 
+""" Create database and it's tables if it's not already created """
 build_db()
 
-API_TOKEN = os.getenv('API_TOKEN')
-cmds = [
-    telebot.types.BotCommand("myapps", "List your applications"),
-    telebot.types.BotCommand("addapp", "Add an application"),
-    telebot.types.BotCommand("status", "Return status of all apps"),
-    telebot.types.BotCommand("start", "Welcoming message")
-]
-bot = TeleBot(API_TOKEN)
-bot.set_my_commands(cmds)
+""" Initialize the bot commands """
+# cmds = [
+#     telebot.types.BotCommand("start", "Welcoming message"),
+#     telebot.types.BotCommand("myapps", "Get a list of your apps"),
+#     telebot.types.BotCommand("addapp", "Add an app to your list"),
+#     telebot.types.BotCommand("delapp", "Delete an app"),
+#     telebot.types.BotCommand("status", "Return status of your apps"),
+#     telebot.types.BotCommand("cancel", "cancel the current operation"),
+# ]
+# bot.set_my_commands(cmds)
 
 
-class pkgsCallbackFilter(AdvancedCustomFilter):
-    key = 'config'
-
-    def check(self, call: types.CallbackQuery, config: CallbackDataFilter):
-        return config.check(query=call)
-
-
-class delPkgCallbackFilter(AdvancedCustomFilter):
-    key = 'delpkg'
-
-    def check(self, call: types.CallbackQuery, delpkg: CallbackDataFilter):
-        return delpkg.check(query=call)
-
-
-pkgs_factory = CallbackData('pkg_id', prefix='pkgs')
-delpkg_factory = CallbackData('pkg_id', prefix='delpkg')
-
-
-def pkgs_keyboard(pkgs):
-    return types.InlineKeyboardMarkup(
-        row_width=1,
-        keyboard=[
-            [
-                types.InlineKeyboardButton(
-                    text=pkg,
-                    callback_data=pkgs_factory.new(pkg_id=pkg)
-                )
-            ] for pkg in pkgs
-        ]
-    )
-
-
-def options_keyboard(pkg):
-    return types.InlineKeyboardMarkup(
-        row_width=2,
-        keyboard=[
-            [
-                types.InlineKeyboardButton(
-                    text='◀️ Go back to the list',
-                    callback_data='back'
-                )
-            ], [
-                types.InlineKeyboardButton(
-                    text='🗑 Delete Application',
-                    callback_data=delpkg_factory.new(pkg_id=pkg)
-                )
-            ]
-        ]
-    )
+bot = TeleBot(token=os.getenv('API_TOKEN'))
 
 
 @bot.message_handler(commands=['myapps'])
 def list_pkgs(message):
-    print(message.chat.id)
     pkgs = dbConfig().get_pkgs(int(message.chat.id))
     if len(pkgs) <= 0:
-        bot.send_message(message.chat.id, "You have no apps yet, please use the command /addapp the add a new app.")
+        bot.send_message(message.chat.id,
+                         "You have no apps yet, please use the command <b>/addapp</b> the add a new app.",
+                         parse_mode='HTML')
     else:
-        bot.send_message(message.chat.id, "Select an app to see the details", reply_markup=pkgs_keyboard(pkgs))
+        bot.send_message(message.chat.id, "<b>Select an app to see the details</b>", parse_mode='HTML',
+                         reply_markup=pkgs_keyboard(pkgs))
 
 
 @bot.callback_query_handler(func=None, config=pkgs_factory.filter())
 def pkgs_callback(call: types.CallbackQuery):
     callback_data: dict = pkgs_factory.parse(callback_data=call.data)
     pkg = callback_data['pkg_id']
-    print(pkg)
     bot.edit_message_text(chat_id=call.message.chat.id, message_id=call.message.message_id,
                           text=pkg, reply_markup=options_keyboard(pkg))
 
