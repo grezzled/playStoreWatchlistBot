@@ -27,22 +27,23 @@ cmds = [
     telebot.types.BotCommand("myapps", "Show the list of your apps"),
     telebot.types.BotCommand("statusapps", "Check status of your apps"),
     telebot.types.BotCommand("cancel", "Cancel the current operation"),
-    telebot.types.BotCommand("help", "Instructions for using Bot commands")
-]
+    telebot.types.BotCommand("startnotifier", "Turn on notifications to receive updates"),
+    telebot.types.BotCommand("stopnotifier", "Turn off notifications to stop receiving updates"),
+    telebot.types.BotCommand("help", "Instructions for using Bot commands"),
 
+]
 
 bot = TeleBot(token=os.getenv('API_TOKEN'))
 
 
-# bot.set_my_commands(cmds)
+bot.set_my_commands(cmds)
 
 
 @bot.message_handler(commands=['start'])
-def set_timer(message):
+def start(message):
     print(f'Count of running jobs: {len(schedule.get_jobs())}')
     bot.send_message(chat_id=message.chat.id, text=constants.START, parse_mode='HTML')
-    if not schedule.get_jobs(message.chat.id):
-        schedule.every(1).hour.do(status_notifier, message.chat.id).tag(message.chat.id)
+    notifier(message)
 
 
 @bot.message_handler(commands=['addapp'])
@@ -108,9 +109,16 @@ def status_pkgs(message):
     bot.send_message(message.chat.id, constants.HELP_INSTRUCTIONS)
 
 
-@bot.message_handler(commands=['unset'])
-def unset_timer(message):
+@bot.message_handler(commands=['stopnotifier'])
+def stop_notifier(message):
     schedule.clear(message.chat.id)
+    bot.send_message(message.chat.id, constants.NOTIFIER_STOPPED, parse_mode='HTML')
+
+
+@bot.message_handler(commands=['startnotifier'])
+def start_notifier(message):
+    notifier(message)
+    bot.send_message(message.chat.id, constants.NOTIFIER_STARTED, parse_mode='HTML')
 
 
 # default handler for every other text
@@ -130,6 +138,11 @@ def status_notifier(chat_id) -> None:
                 bot.send_message(chat_id, f'🟢 {pkg}')
             else:
                 bot.send_message(chat_id, f'🔴 {pkg}')
+
+
+def notifier(message):
+    if not schedule.get_jobs(message.chat.id):
+        schedule.every(1).hour.do(status_notifier, message.chat.id).tag(message.chat.id)
 
 
 bot.add_custom_filter(pkgsCallbackFilter())

@@ -16,6 +16,8 @@ MULTI_PKG_NOT_VALID = "It's not a valid package name"
 MULTI_APP_EXIST = " Already exist"
 
 CANCEL = "Operation canceled"
+NOTIFIER_STOPPED = "The Notifier has stopped, and you won't get any notifications. To turn it back on, please type in the command <b>/startnotifier</b>."
+NOTIFIER_STARTED = "The Notifier has started, and you will receive notifications.To turn it back off, please type in the command <b>/stopnotifier</b>."
 
 HELP_INSTRUCTIONS = """
 /start - Welcoming message    
