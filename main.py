@@ -21,19 +21,16 @@ build_db()
 """ Initialize the bot commands """
 cmds = [
     telebot.types.BotCommand("start", "Welcoming message"),
-    telebot.types.BotCommand("addapp", "Add an app to your list"),
+    telebot.types.BotCommand("addapp", "Add an app"),
     telebot.types.BotCommand("addapps", "Add multiple apps at once"),
-    telebot.types.BotCommand("myapps", "Get a list of your apps"),
-    telebot.types.BotCommand("delapp", "Delete an app"),
-    telebot.types.BotCommand("status", "Return status of your apps"),
-    telebot.types.BotCommand("cancel", "cancel the current operation"),
+    telebot.types.BotCommand("myapps", "Show the list of your apps"),
+    telebot.types.BotCommand("statusapps", "Check status of your apps"),
+    telebot.types.BotCommand("cancel", "Cancel the current operation"),
 ]
 
 bot = TeleBot(token=os.getenv('API_TOKEN'))
 
 # bot.set_my_commands(cmds)
-
-
 
 
 @bot.message_handler(commands=['start'])
@@ -52,7 +49,6 @@ def add_pkg(message):
 def add_pkgs(message):
     bot.send_message(message.chat.id, constants.ENTER_PKGS_NAMES, parse_mode='HTML')
     bot.register_next_step_handler(message=message, callback=process_pkgs_step, _bot=bot)
-
 
 
 @bot.message_handler(commands=['myapps'])
@@ -98,7 +94,7 @@ def delpkg_callback(call: types.CallbackQuery):
                           text=constants.SELECT_APP, parse_mode='HTML', reply_markup=pkgs_keyboard(pkgs))
 
 
-@bot.message_handler(commands=['status'])
+@bot.message_handler(commands=['statusapps'])
 def status_pkgs(message):
     status_notifier(chat_id=message.chat.id)
 
