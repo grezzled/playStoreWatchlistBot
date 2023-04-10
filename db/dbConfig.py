@@ -124,8 +124,8 @@ class dbConfig:
         with self.con:
             try:
                 self.con.execute(sql_string, data)
-            except NameError:
-                pass
+            except Exception as e:
+                print(str(e))
 
     def add_pkg(self, pkg: str, user_id: int):
         # TODO validate pkg, make sure it is an application pkg name

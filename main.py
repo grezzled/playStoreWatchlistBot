@@ -26,9 +26,11 @@ cmds = [
     telebot.types.BotCommand("myapps", "Show the list of your apps"),
     telebot.types.BotCommand("statusapps", "Check status of your apps"),
     telebot.types.BotCommand("cancel", "Cancel the current operation"),
+    telebot.types.BotCommand("help", "Instructions for using Bot commands")
 ]
 
 bot = TeleBot(token=os.getenv('API_TOKEN'))
+
 
 # bot.set_my_commands(cmds)
 
@@ -36,7 +38,7 @@ bot = TeleBot(token=os.getenv('API_TOKEN'))
 @bot.message_handler(commands=['start'])
 def set_timer(message):
     bot.send_message(chat_id=message.chat.id, text=constants.START, parse_mode='HTML')
-    schedule.every(random.randrange(3600, 7200)).seconds.do(status_notifier, message.chat.id).tag(message.chat.id)
+    schedule.every(3600).seconds.do(status_notifier, message.chat.id).tag(message.chat.id)
 
 
 @bot.message_handler(commands=['addapp'])
@@ -75,8 +77,6 @@ def back_callback(call: types.CallbackQuery):
                           text=constants.YOUR_APPLICATIONS, parse_mode='HTML', reply_markup=pkgs_keyboard(pkgs))
 
 
-
-
 @bot.message_handler(commands=['addapps'])
 def add_pkg(message):
     bot.send_message(message.chat.id, "Please enter your apps package names separated by a comma (,)")
@@ -97,6 +97,18 @@ def delpkg_callback(call: types.CallbackQuery):
 @bot.message_handler(commands=['statusapps'])
 def status_pkgs(message):
     status_notifier(chat_id=message.chat.id)
+
+
+@bot.message_handler(commands=['help'])
+def status_pkgs(message):
+    bot.send_message(message.chat.id, constants.HELP_INSTRUCTIONS)
+
+
+# default handler for every other text
+@bot.message_handler(func=lambda message: True, content_types=['text'])
+def command_default(m):
+    # this is the standard reply to a normal message
+    bot.send_message(m.chat.id, "I don't understand \"" + m.text + "\"\nMaybe try the help page at /help")
 
 
 def status_notifier(chat_id) -> None:
