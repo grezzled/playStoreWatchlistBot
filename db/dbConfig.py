@@ -132,7 +132,10 @@ class dbConfig:
         sql_string = 'insert into pkgs (pkg, user_id) values(?,?)'
         data = [(pkg, user_id)]
         with self.con:
-            self.con.executemany(sql_string, data)
+            try:
+                self.con.executemany(sql_string, data)
+            except Exception as e:
+                print(str(e))
 
     def del_pkg(self, pkg: str):
         sql_string = ' DELETE FROM pkgs WHERE pkg=(?)'
@@ -159,5 +162,3 @@ class dbConfig:
             for r in cursor:
                 rows.append(r[0])
         return rows
-
-

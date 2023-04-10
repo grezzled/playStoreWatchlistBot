@@ -8,7 +8,7 @@ import constants
 from botFactories import pkgs_factory, delpkg_factory
 from botFilters import pkgsCallbackFilter, delPkgCallbackFilter
 from botKeyboards import pkgs_keyboard, options_keyboard
-from botSteps import process_pkg_step
+from botSteps import process_pkg_step, process_pkgs_step
 from db.dbConfig import dbConfig, build_db
 from scraper.gpScraper import scrap_app
 
@@ -19,24 +19,40 @@ load_dotenv()
 build_db()
 
 """ Initialize the bot commands """
-# cmds = [
-#     telebot.types.BotCommand("start", "Welcoming message"),
-#     telebot.types.BotCommand("myapps", "Get a list of your apps"),
-#     telebot.types.BotCommand("addapp", "Add an app to your list"),
-#     telebot.types.BotCommand("delapp", "Delete an app"),
-#     telebot.types.BotCommand("status", "Return status of your apps"),
-#     telebot.types.BotCommand("cancel", "cancel the current operation"),
-# ]
+cmds = [
+    telebot.types.BotCommand("start", "Welcoming message"),
+    telebot.types.BotCommand("addapp", "Add an app to your list"),
+    telebot.types.BotCommand("addapps", "Add multiple apps at once"),
+    telebot.types.BotCommand("myapps", "Get a list of your apps"),
+    telebot.types.BotCommand("delapp", "Delete an app"),
+    telebot.types.BotCommand("status", "Return status of your apps"),
+    telebot.types.BotCommand("cancel", "cancel the current operation"),
+]
+
+bot = TeleBot(token=os.getenv('API_TOKEN'))
+
 # bot.set_my_commands(cmds)
 
 
-bot = TeleBot(token=os.getenv('API_TOKEN'))
 
 
 @bot.message_handler(commands=['start'])
 def set_timer(message):
     bot.send_message(chat_id=message.chat.id, text=constants.START, parse_mode='HTML')
     schedule.every(random.randrange(3600, 7200)).seconds.do(status_notifier, message.chat.id).tag(message.chat.id)
+
+
+@bot.message_handler(commands=['addapp'])
+def add_pkg(message):
+    bot.send_message(message.chat.id, constants.ENTER_PKG_NAME, parse_mode='HTML')
+    bot.register_next_step_handler(message=message, callback=process_pkg_step, _bot=bot)
+
+
+@bot.message_handler(commands=['addapps'])
+def add_pkgs(message):
+    bot.send_message(message.chat.id, constants.ENTER_PKGS_NAMES, parse_mode='HTML')
+    bot.register_next_step_handler(message=message, callback=process_pkgs_step, _bot=bot)
+
 
 
 @bot.message_handler(commands=['myapps'])
@@ -63,10 +79,6 @@ def back_callback(call: types.CallbackQuery):
                           text=constants.YOUR_APPLICATIONS, parse_mode='HTML', reply_markup=pkgs_keyboard(pkgs))
 
 
-@bot.message_handler(commands=['addapp'])
-def add_pkg(message):
-    bot.send_message(message.chat.id, "Please enter your app package name")
-    bot.register_next_step_handler(message=message, callback=process_pkg_step, _bot=bot)
 
 
 @bot.message_handler(commands=['addapps'])
