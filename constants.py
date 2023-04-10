@@ -15,6 +15,8 @@ MULTI_APP_ADDED = "Added successfully"
 MULTI_PKG_NOT_VALID = "It's not a valid package name"
 MULTI_APP_EXIST = " Already exist"
 
+CANCEL = "Operation canceled"
+
 HELP_INSTRUCTIONS = """
 /start - Welcoming message    
 /addapp - Add an app

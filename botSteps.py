@@ -4,6 +4,8 @@ from db.dbConfig import dbConfig
 
 
 def process_pkg_step(_message, _bot):
+    if _message.text.strip() == '/cancel':
+        return _bot.send_message(_message.chat.id, f'{constants.CANCEL}', parse_mode="HTML")
     pkg = _message.text.strip()
     chat_id = _message.chat.id
     if not re.match(r"^([A-Za-z]{1}[A-Za-z\d_]*\.)+[A-Za-z][A-Za-z\d_]*$", pkg):
@@ -16,6 +18,8 @@ def process_pkg_step(_message, _bot):
 
 
 def process_pkgs_step(_message, _bot):
+    if _message.text.strip() == '/cancel':
+        return _bot.send_message(_message.chat.id, f'{constants.CANCEL}', parse_mode="HTML")
     pkgs = _message.text.strip().split(',')
     chat_id = _message.chat.id
     for pkg in pkgs:
