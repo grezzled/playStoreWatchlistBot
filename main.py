@@ -119,7 +119,6 @@ def command_default(m):
 
 
 def status_notifier(chat_id) -> None:
-    return print('tic')
     pkgs = dbConfig().get_pkgs(int(chat_id))
     if len(pkgs) <= 0:
         bot.send_message(chat_id, "You have no apps yet, please use the command /addapp the add a new app.")
@@ -129,9 +128,6 @@ def status_notifier(chat_id) -> None:
                 bot.send_message(chat_id, f'🟢 {pkg}')
             else:
                 bot.send_message(chat_id, f'🔴 {pkg}')
-
-
-
 
 
 bot.add_custom_filter(pkgsCallbackFilter())

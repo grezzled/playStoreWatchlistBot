@@ -144,7 +144,7 @@ class dbConfig:
             self.con.execute(sql_string, data)
 
     def get_pkgs(self, user_id: int) -> []:
-        sql_string = 'SELECT pkg FROM pkgs WHERE user_id <= (?)'
+        sql_string = 'SELECT pkg FROM pkgs WHERE user_id = (?)'
         data = [user_id]
         rows = []
         with self.con:
