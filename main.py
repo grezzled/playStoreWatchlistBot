@@ -37,8 +37,10 @@ bot = TeleBot(token=os.getenv('API_TOKEN'))
 
 @bot.message_handler(commands=['start'])
 def set_timer(message):
+    print(f'Count of running jobs: {len(schedule.get_jobs())}')
     bot.send_message(chat_id=message.chat.id, text=constants.START, parse_mode='HTML')
-    schedule.every(3600).seconds.do(status_notifier, message.chat.id).tag(message.chat.id)
+    if not schedule.get_jobs(message.chat.id):
+        schedule.every(1).hour.do(status_notifier, message.chat.id).tag(message.chat.id)
 
 
 @bot.message_handler(commands=['addapp'])
@@ -104,6 +106,11 @@ def status_pkgs(message):
     bot.send_message(message.chat.id, constants.HELP_INSTRUCTIONS)
 
 
+@bot.message_handler(commands=['unset'])
+def unset_timer(message):
+    schedule.clear(message.chat.id)
+
+
 # default handler for every other text
 @bot.message_handler(func=lambda message: True, content_types=['text'])
 def command_default(m):
@@ -112,6 +119,7 @@ def command_default(m):
 
 
 def status_notifier(chat_id) -> None:
+    return print('tic')
     pkgs = dbConfig().get_pkgs(int(chat_id))
     if len(pkgs) <= 0:
         bot.send_message(chat_id, "You have no apps yet, please use the command /addapp the add a new app.")
@@ -123,9 +131,7 @@ def status_notifier(chat_id) -> None:
                 bot.send_message(chat_id, f'🔴 {pkg}')
 
 
-@bot.message_handler(commands=['unset'])
-def unset_timer(message):
-    schedule.clear(message.chat.id)
+
 
 
 bot.add_custom_filter(pkgsCallbackFilter())
