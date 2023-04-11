@@ -154,7 +154,7 @@ def revenue_notifier(chat_id):
 def notifier(message):
     if not schedule.get_jobs(message.chat.id):
         schedule.every(1).hour.do(status_notifier, message.chat.id).tag(message.chat.id)
-        schedule.every(3).seconds.do(revenue_notifier, message.chat.id).tag(message.chat.id)
+        schedule.every(3).hours.do(revenue_notifier, message.chat.id).tag(message.chat.id)
 
 
 bot.add_custom_filter(pkgsCallbackFilter())
