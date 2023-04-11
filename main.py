@@ -13,6 +13,8 @@ from botSteps import process_pkg_step, process_pkgs_step
 from db.dbConfig import dbConfig, build_db
 from scraper.gpScraper import scrap_app
 
+from api.applovinMax import applovinMax
+
 """ Load environment variables """
 load_dotenv()
 
@@ -33,8 +35,9 @@ cmds = [
 
 ]
 
-bot = TeleBot(token=os.getenv('API_TOKEN'))
+applovin_report_key = os.getenv('APPLOVIN_REPORT_KEY')
 
+bot = TeleBot(token=os.getenv('API_TOKEN'))
 
 bot.set_my_commands(cmds)
 
@@ -140,9 +143,15 @@ def status_notifier(chat_id) -> None:
                 bot.send_message(chat_id, f'🔴 {pkg}')
 
 
+def revenue_notifier(chat_id):
+    revenue = round(float(applovinMax(applovin_report_key).today_revenue()), 2)
+    bot.send_message(chat_id, f'💰Today💰: <b>{revenue}$</b>', parse_mode='HTML')
+
+
 def notifier(message):
     if not schedule.get_jobs(message.chat.id):
         schedule.every(1).hour.do(status_notifier, message.chat.id).tag(message.chat.id)
+        schedule.every(3).hour.do(revenue_notifier, message.chat.id).tag(message.chat.id)
 
 
 bot.add_custom_filter(pkgsCallbackFilter())
