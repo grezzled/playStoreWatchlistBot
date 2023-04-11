@@ -144,14 +144,17 @@ def status_notifier(chat_id) -> None:
 
 
 def revenue_notifier(chat_id):
-    revenue = round(float(applovinMax(applovin_report_key).today_revenue()), 2)
-    bot.send_message(chat_id, f'💰Today💰: <b>{revenue}$</b>', parse_mode='HTML')
+    today_revenue = round(float(applovinMax(applovin_report_key).today_revenue()), 2)
+    yesterday_revenue = round(float(applovinMax(applovin_report_key).yesterday_revenue()), 2)
+    bot.send_message(chat_id, f'💰Yesterday💰: <b>{yesterday_revenue}$</b>'
+                              f' \n\n💰<b>Today</b>💰: <b>{today_revenue}$</b>',
+                     parse_mode='HTML')
 
 
 def notifier(message):
     if not schedule.get_jobs(message.chat.id):
         schedule.every(1).hour.do(status_notifier, message.chat.id).tag(message.chat.id)
-        schedule.every(3).hour.do(revenue_notifier, message.chat.id).tag(message.chat.id)
+        schedule.every(3).seconds.do(revenue_notifier, message.chat.id).tag(message.chat.id)
 
 
 bot.add_custom_filter(pkgsCallbackFilter())

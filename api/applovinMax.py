@@ -1,4 +1,4 @@
-from datetime import datetime
+from datetime import datetime, date, timedelta
 
 import requests
 
@@ -37,9 +37,21 @@ class applovinMax:
         return f'{url}?{params}'
 
     def today_revenue(self):
-        today = datetime.today().strftime('%Y-%m-%d')
+        today = date.today().strftime('%Y-%m-%d')
         req_url = self._build_url(start=today, end=today)
         res = requests.get(req_url, timeout=10).json()
         return res['results'][0]['estimated_revenue']
 
+    def yesterday_revenue(self):
+        yesterday = date.today() - timedelta(days=1)
+        today = datetime.today().strftime('%Y-%m-%d')
+        req_url = self._build_url(start=yesterday, end=yesterday)
+        res = requests.get(req_url, timeout=10).json()
+        return res['results'][0]['estimated_revenue']
 
+    # def seven_days_revenue(self):
+    #     seven_days = date.today() - timedelta(days=7)
+    #     today = datetime.today().strftime('%Y-%m-%d')
+    #     req_url = self._build_url(start=today, end=seven_days)
+    #     res = requests.get(req_url, timeout=10).json()
+    #     return res['results'][0]['estimated_revenue']
