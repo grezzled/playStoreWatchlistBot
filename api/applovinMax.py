@@ -39,19 +39,28 @@ class applovinMax:
     def today_revenue(self):
         today = date.today().strftime('%Y-%m-%d')
         req_url = self._build_url(start=today, end=today)
-        res = requests.get(req_url, timeout=10).json()
-        return res['results'][0]['estimated_revenue']
+        proxies = {"http": None, "https": None}
+        res = requests.get(url=req_url, proxies=proxies, timeout=10)
+        if res:
+            return res.json()['results'][0]['estimated_revenue']
+        else:
+            print(res)
+            return False
 
     def yesterday_revenue(self):
         yesterday = date.today() - timedelta(days=1)
-        today = datetime.today().strftime('%Y-%m-%d')
         req_url = self._build_url(start=yesterday, end=yesterday)
-        res = requests.get(req_url, timeout=10).json()
-        return res['results'][0]['estimated_revenue']
+        proxies = {"http": None, "https": None}
+        res = requests.get(url=req_url, proxies=proxies, timeout=10)
+        if res:
+            return res.json()['results'][0]['estimated_revenue']
+        else:
+            print(res)
+            return False
 
-    # def seven_days_revenue(self):
-    #     seven_days = date.today() - timedelta(days=7)
-    #     today = datetime.today().strftime('%Y-%m-%d')
-    #     req_url = self._build_url(start=today, end=seven_days)
-    #     res = requests.get(req_url, timeout=10).json()
-    #     return res['results'][0]['estimated_revenue']
+# def seven_days_revenue(self):
+#     seven_days = date.today() - timedelta(days=7)
+#     today = datetime.today().strftime('%Y-%m-%d')
+#     req_url = self._build_url(start=today, end=seven_days)
+#     res = requests.get(req_url, timeout=10).json()
+#     return res['results'][0]['estimated_revenue']

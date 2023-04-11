@@ -144,8 +144,12 @@ def status_notifier(chat_id) -> None:
 
 
 def revenue_notifier(chat_id):
-    today_revenue = round(float(applovinMax(applovin_report_key).today_revenue()), 2)
-    yesterday_revenue = round(float(applovinMax(applovin_report_key).yesterday_revenue()), 2)
+    alm = applovinMax(applovin_report_key)
+    today_revenue = alm.today_revenue()
+    yesterday_revenue = alm.yesterday_revenue()
+    if today_revenue and yesterday_revenue:
+        today_revenue = round(float(today_revenue), 2)
+        yesterday_revenue = round(float(yesterday_revenue), 2)
     bot.send_message(chat_id, f'💰Yesterday💰: <b>{yesterday_revenue}$</b>'
                               f' \n\n💰<b>Today</b>💰: <b>{today_revenue}$</b>',
                      parse_mode='HTML')
