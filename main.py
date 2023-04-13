@@ -24,7 +24,7 @@ build_cmds(bot, False)
 def cmd_start(message):
     print(f'Count of running jobs: {len(schedule.get_jobs())}')
     bot.send_message(chat_id=message.chat.id, text=constants.START, parse_mode='HTML')
-    notifier(message)
+    notifier(bot, message)
 
 
 @bot.message_handler(commands=['addapp'])
@@ -66,7 +66,7 @@ def revenue(message):
 
 @bot.message_handler(commands=['startnotifier'])
 def start_notifier(message):
-    notifier(message)
+    notifier(bot, message)
     bot.send_message(message.chat.id, constants.NOTIFIER_STARTED, parse_mode='HTML')
 
 

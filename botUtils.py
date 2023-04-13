@@ -28,10 +28,10 @@ def build_cmds(bot, debug=False):
         bot.set_my_commands(cmds)
 
 
-def notifier(message):
+def notifier(bot, message):
     if not schedule.get_jobs(message.chat.id):
-        schedule.every(1).hour.do(status_notifier, message.chat.id).tag(message.chat.id)
-        schedule.every(30).minutes.do(revenue_notifier, message.chat.id).tag(message.chat.id)
+        schedule.every(1).hour.do(status_notifier, bot, message).tag(message.chat.id)
+        schedule.every(30).minutes.do(revenue_notifier, bot, message).tag(message.chat.id)
 
 
 def revenue_details(bot, message):
