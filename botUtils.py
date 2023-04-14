@@ -3,6 +3,7 @@ import os
 import schedule
 import telebot
 
+import constants
 from api.applovinMax import applovinMax
 from db.dbConfig import dbConfig
 from scraper.gpScraper import scrap_app
@@ -28,10 +29,27 @@ def build_cmds(bot, debug=False):
         bot.set_my_commands(cmds)
 
 
-def notifier(bot, message):
+def _app_status_notifier(bot, message):
+    pkgs = dbConfig().get_pkgs(int(message.chat.id))
+    if len(pkgs) <= 0:
+        bot.send_message(message.chat.id, constants.YOU_HAVE_NO_APPS)
+    every = int(60 * 60 / len(pkgs))
+    position = 1
+    for pkg in pkgs:
+        if not schedule.get_jobs(str(message.chat.id) + pkg):
+            schedule.every(every * position).seconds.do(pkg_status_notifier, pkg, bot, message).tag(
+                str(message.chat.id) + pkg)
+        position += 1
+
+
+def _max_revenue(bot, message):
     if not schedule.get_jobs(message.chat.id):
-        schedule.every(1).hour.do(status_notifier, bot, message).tag(message.chat.id)
         schedule.every(30).minutes.do(revenue_notifier, bot, message).tag(message.chat.id)
+
+
+def notifier(bot, message):
+    _app_status_notifier(bot, message)
+    _max_revenue(bot, message)
 
 
 def revenue_details(bot, message):
@@ -51,13 +69,24 @@ def revenue_details(bot, message):
 def status_notifier(bot, message) -> None:
     pkgs = dbConfig().get_pkgs(int(message.chat.id))
     if len(pkgs) <= 0:
-        bot.send_message(message.chat.id, "You have no apps yet, please use the command /addapp the add a new app.")
+        bot.send_message(message.chat.id, constants.YOU_HAVE_NO_APPS)
     else:
         for pkg in pkgs:
             if scrap_app(pkg, message.chat.id) is not False:
                 bot.send_message(message.chat.id, f'🟢 {pkg}')
             else:
                 bot.send_message(message.chat.id, f'🔴 {pkg}')
+
+
+def pkg_status_notifier(pkg: str, bot, message):
+    pkgs = dbConfig().get_pkg_by_user_id(pkg, int(message.chat.id))
+    if len(pkgs) <= 0:
+        bot.send_message(message.chat.id, constants.YOU_HAVE_NO_APPS)
+    if pkg:
+        if scrap_app(pkg, message.chat.id) is not False:
+            bot.send_message(message.chat.id, f'🟢 {pkg}')
+        else:
+            bot.send_message(message.chat.id, f'🔴 {pkg}')
 
 
 def revenue_notifier(bot, message):

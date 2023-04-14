@@ -162,3 +162,13 @@ class dbConfig:
             for r in cursor:
                 rows.append(r[0])
         return rows
+
+    def get_pkg_by_user_id(self, pkg: str, user_id: int) -> []:
+        sql_string = 'SELECT pkg FROM pkgs WHERE pkg = (?) AND user_id = (?)'
+        data = (pkg, user_id)
+        rows = []
+        with self.con:
+            cursor = self.con.execute(sql_string, data)
+            for r in cursor:
+                rows.append(r[0])
+        return rows
