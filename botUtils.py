@@ -33,7 +33,7 @@ def _app_status_notifier(bot, message):
     pkgs = dbConfig().get_pkgs(int(message.chat.id))
     if len(pkgs) <= 0:
         bot.send_message(message.chat.id, constants.YOU_HAVE_NO_APPS)
-    every = int(60 * 60 / len(pkgs))
+    every = int(60 / len(pkgs))
     position = 1
     for pkg in pkgs:
         if not schedule.get_jobs(str(message.chat.id) + pkg):
