@@ -7,9 +7,10 @@ import constants
 from botFactories import pkgs_factory, delpkg_factory
 from botFilters import pkgsCallbackFilter, delPkgCallbackFilter
 from botKeyboards import pkgs_keyboard, options_keyboard
+from botNotifier import notifier
 from botSteps import process_pkg_step, process_pkgs_step
 from db.dbConfig import dbConfig, build_db
-from botUtils import revenue_details, status_notifier, notifier, build_cmds
+from botUtils import revenue_details, build_cmds, apps_status_cmd
 
 load_dotenv()
 
@@ -50,12 +51,12 @@ def cmd_list_apps(message):
 
 @bot.message_handler(commands=['statusapps'])
 def status_pkgs(message):
-    status_notifier(bot, message)
+    apps_status_cmd(bot, message)
 
 
 @bot.message_handler(commands=['stopnotifier'])
 def stop_notifier(message):
-    schedule.clear(message.chat.id)
+    schedule.clear()
     bot.send_message(message.chat.id, constants.NOTIFIER_STOPPED, parse_mode='HTML')
 
 
