@@ -1,5 +1,4 @@
 import os
-import schedule
 import telebot
 import constants
 from api.applovinMax import applovinMax
@@ -28,9 +27,7 @@ def build_cmds(bot, debug=False):
 
 
 def check_app_status(pkg, bot, message):
-    if scrap_app(pkg, message.chat.id) is not False:
-        bot.send_message(message.chat.id, f'🟢 All Good')
-    else:
+    if scrap_app(pkg, message.chat.id) is False:
         bot.send_message(message.chat.id, f'🔴 Alert: App is down ({pkg})')
 
 
