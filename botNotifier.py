@@ -23,7 +23,7 @@ def apps_status_notification(bot, message):
     if len(pkgs) <= 0:
         bot.send_message(message.chat.id, constants.YOU_HAVE_NO_APPS)
     # split apps checking around the hour
-    every = int(60 * 1 / len(pkgs))
+    every = int(60 * 60 / len(pkgs))
     for index, pkg in enumerate(pkgs, start=1):
         if not schedule.get_jobs(str(message.chat.id) + pkg):
             schedule.every(every * index).seconds.do(check_app_status, pkg, bot, message).tag(
@@ -32,9 +32,9 @@ def apps_status_notification(bot, message):
 
 def revenue_notification(bot, message):
     if not schedule.get_jobs(message.chat.id):
-        schedule.every(30).minutes.do(check_revenue, bot, message).tag(message.chat.id)
+        schedule.every(1).day.at("07:00").do(check_revenue, bot, message).tag(message.chat.id)
 
 
 def notifier(bot, message):
-    apps_status_notification(bot, message)
     revenue_notification(bot, message)
+    apps_status_notification(bot, message)

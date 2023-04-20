@@ -33,28 +33,20 @@ def check_app_status(pkg, bot, message):
 
 def check_revenue(bot, message):
     alm = applovinMax(applovin_report_key)
-    today_revenue = alm.today_revenue()
     yesterday_revenue = alm.yesterday_revenue()
-    if today_revenue and yesterday_revenue:
-        today_revenue = round(float(today_revenue), 2)
+    if yesterday_revenue:
         yesterday_revenue = round(float(yesterday_revenue), 2)
-    bot.send_message(message.chat.id, f'💰Yesterday💰: <b>{yesterday_revenue}$</b>'
-                                      f' \n\n💰<b>Today</b>💰: <b>{today_revenue}$</b>',
-                     parse_mode='HTML')
+    bot.send_message(message.chat.id, f'💰Yesterday: <b>{yesterday_revenue}$</b>', parse_mode='HTML')
 
 
 def revenue_details(bot, message):
     _msg = bot.send_message(chat_id=message.chat.id, text='Loading...', parse_mode='HTML')
     alm = applovinMax(applovin_report_key)
-    today_revenue = alm.today_revenue()
     yesterday_revenue = alm.yesterday_revenue()
-    if today_revenue and yesterday_revenue:
-        today_revenue = round(float(today_revenue), 2)
+    if yesterday_revenue:
         yesterday_revenue = round(float(yesterday_revenue), 2)
     bot.edit_message_text(chat_id=message.chat.id, message_id=_msg.message_id,
-                          text=f'💰Yesterday💰: <b>{yesterday_revenue}$</b>'
-                               f' \n\n💰<b>Today</b>💰: <b>{today_revenue}$</b>',
-                          parse_mode='HTML')
+                          text=f'💰Yesterday💰: <b>{yesterday_revenue}$</b>', parse_mode='HTML')
 
 
 def apps_status_cmd(bot, message) -> None:
